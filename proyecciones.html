@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proyecciones de un Cubo</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+        #controls {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Proyecciones de un Cubo</h1>
+
+<div id="controls">
+    <label for="projection">Selecciona un tipo de proyección:</label>
+    <select id="projection" onchange="drawCube()">
+        <option value="perspectiva">Perspectiva</option>
+        <option value="ortografica">Ortográfica</option>
+        <option value="isometrica">Isométrica</option>
+    </select>
+</div>
+
+<canvas id="cubeCanvas" width="400" height="400"></canvas>
+
+<script>
+    const canvas = document.getElementById('cubeCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function drawCube() {
+        const projection = document.getElementById('projection').value;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        if (projection === 'perspectiva') {
+            drawPerspectiveCube();
+        } else if (projection === 'ortografica') {
+            drawOrthographicCube();
+        } else if (projection === 'isometrica') {
+            drawIsometricCube();
+        }
+    }
+
+    function drawLine(x1, y1, x2, y2) {
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+    }
+
+    function drawPerspectiveCube() {
+        const scale = 100;
+        const offsetX = 200;
+        const offsetY = 200;
+
+        // Coordenadas para la cara frontal
+        const front = [
+            [offsetX - scale, offsetY - scale],  // Top left
+            [offsetX + scale, offsetY - scale],  // Top right
+            [offsetX + scale, offsetY + scale],  // Bottom right
+            [offsetX - scale, offsetY + scale]   // Bottom left
+        ];
+
+        // Coordenadas para la cara trasera (en perspectiva)
+        const back = [
+            [offsetX - scale * 0.5, offsetY - scale * 1.5],
+            [offsetX + scale * 0.5, offsetY - scale * 1.5],
+            [offsetX + scale * 0.5, offsetY - scale * 0.5],
+            [offsetX - scale * 0.5, offsetY - scale * 0.5]
+        ];
+
+        // Dibujar cara frontal
+        for (let i = 0; i < front.length; i++) {
+            const next = (i + 1) % front.length;
+            drawLine(front[i][0], front[i][1], front[next][0], front[next][1]);
+        }
+
+        // Dibujar cara trasera
+        for (let i = 0; i < back.length; i++) {
+            const next = (i + 1) % back.length;
+            drawLine(back[i][0], back[i][1], back[next][0], back[next][1]);
+        }
+
+        // Conectar caras
+        for (let i = 0; i < front.length; i++) {
+            drawLine(front[i][0], front[i][1], back[i][0], back[i][1]);
+        }
+    }
+
+    function drawOrthographicCube() {
+        const scale = 100;
+        const offsetX = 200;
+        const offsetY = 200;
+
+        // Proyección ortográfica: todas las líneas paralelas, sin distorsión por perspectiva
+
+        // Coordenadas para la cara frontal
+        const front = [
+            [offsetX - scale, offsetY - scale],  // Top left
+            [offsetX + scale, offsetY - scale],  // Top right
+            [offsetX + scale, offsetY + scale],  // Bottom right
+            [offsetX - scale, offsetY + scale]   // Bottom left
+        ];
+
+        // Coordenadas para la cara trasera
+        const back = [
+            [offsetX - scale, offsetY - scale * 1.5],
+            [offsetX + scale, offsetY - scale * 1.5],
+            [offsetX + scale, offsetY - scale * 0.5],
+            [offsetX - scale, offsetY - scale * 0.5]
+        ];
+
+        // Dibujar cara frontal
+        for (let i = 0; i < front.length; i++) {
+            const next = (i + 1) % front.length;
+            drawLine(front[i][0], front[i][1], front[next][0], front[next][1]);
+        }
+
+        // Dibujar cara trasera
+        for (let i = 0; i < back.length; i++) {
+            const next = (i + 1) % back.length;
+            drawLine(back[i][0], back[i][1], back[next][0], back[next][1]);
+        }
+
+        // Conectar caras
+        for (let i = 0; i < front.length; i++) {
+            drawLine(front[i][0], front[i][1], back[i][0], back[i][1]);
+        }
+    }
+
+    function drawIsometricCube() {
+        const scale = 70;
+        const offsetX = 200;
+        const offsetY = 200;
+
+        // Coordenadas en vista isométrica (ángulos de 30 grados en lugar de 45)
+        const front = [
+            [offsetX, offsetY - scale],  // Top middle
+            [offsetX + scale * Math.cos(Math.PI / 6), offsetY - scale * Math.sin(Math.PI / 6)],  // Top right
+            [offsetX + scale * Math.cos(Math.PI / 6), offsetY + scale * Math.sin(Math.PI / 6)],  // Bottom right
+            [offsetX, offsetY + scale],  // Bottom middle
+            [offsetX - scale * Math.cos(Math.PI / 6), offsetY + scale * Math.sin(Math.PI / 6)],  // Bottom left
+            [offsetX - scale * Math.cos(Math.PI / 6), offsetY - scale * Math.sin(Math.PI / 6)]   // Top left
+        ];
+
+        const backOffsetX = 50;
+        const backOffsetY = 50;
+
+        // Coordenadas para la parte trasera (en isométrica)
+        const back = front.map(([x, y]) => [x - backOffsetX, y - backOffsetY]);
+
+        // Dibujar el frente del cubo
+        for (let i = 0; i < front.length; i++) {
+            const next = (i + 1) % front.length;
+            drawLine(front[i][0], front[i][1], front[next][0], front[next][1]);
+        }
+
+        // Dibujar la parte trasera del cubo
+        for (let i = 0; i < back.length; i++) {
+            const next = (i + 1) % back.length;
+            drawLine(back[i][0], back[i][1], back[next][0], back[next][1]);
+        }
+
+        // Conectar las esquinas del frente y la parte trasera
+        for (let i = 0; i < front.length; i++) {
+            drawLine(front[i][0], front[i][1], back[i][0], back[i][1]);
+        }
+    }
+
+    window.onload = drawCube;
+</script>
+
+</body>
+</html>
