@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js - Escena Básica</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Configuración de la escena, cámara y renderizador
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Añadiendo luz
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        const pointLight = new THREE.PointLight(0xffffff, 1);
+        pointLight.position.set(10, 10, 10);
+        scene.add(pointLight);
+
+        // Función para crear un cubo
+        function createCube() {
+            const geometry = new THREE.BoxGeometry();
+            const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+            const cube = new THREE.Mesh(geometry, material);
+            cube.position.x = -2;
+            return cube;
+        }
+
+        // Función para crear una esfera
+        function createSphere() {
+            const geometry = new THREE.SphereGeometry(0.5, 32, 32);
+            const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+            const sphere = new THREE.Mesh(geometry, material);
+            sphere.position.x = 2;
+            return sphere;
+        }
+
+        // Función para crear un cono
+        function createCone() {
+            const geometry = new THREE.ConeGeometry(0.5, 1, 32);
+            const textureLoader = new THREE.TextureLoader();
+            const texture = textureLoader.load('https://threejs.org/examples/textures/crate.gif'); // URL de una textura
+            const material = new THREE.MeshStandardMaterial({ map: texture });
+            const cone = new THREE.Mesh(geometry, material);
+            cone.position.z = -2;
+            return cone;
+        }
+
+        // Agregando los objetos a la escena
+        const cube = createCube();
+        const sphere = createSphere();
+        const cone = createCone();
+        scene.add(cube, sphere, cone);
+
+        // Posicionando la cámara
+        camera.position.z = 5;
+
+        // Animación
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Rotaciones y movimientos aleatorios
+            cube.rotation.x += 0.01;
+            cube.rotation.y += 0.01;
+            cube.position.x += (Math.random() - 0.5) * 0.01; // Movimiento aleatorio en x
+
+            sphere.rotation.x += 0.02;
+            sphere.rotation.y += 0.02;
+            sphere.position.y += (Math.random() - 0.5) * 0.01; // Movimiento aleatorio en y
+
+            cone.rotation.x += 0.03;
+            cone.rotation.y += 0.03;
+            cone.position.z += (Math.random() - 0.5) * 0.01; // Movimiento aleatorio en z
+
+            // Renderizar la escena
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Ajustar la ventana
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
