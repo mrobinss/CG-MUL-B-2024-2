@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cubos 3D en Línea Horizontal Centrados</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <!-- Importamos la librería Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Variables globales
+        let escena, camara, renderizador;
+        const cubos = []; // Array para almacenar los cubos
+
+        // Función para inicializar la escena
+        function inicializarEscena() {
+            // Creamos la escena
+            escena = new THREE.Scene();
+            // Configuramos la cámara
+            camara = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camara.position.z = 5; // Posicionamos la cámara
+
+            // Creamos el renderizador
+            renderizador = new THREE.WebGLRenderer({ antialias: true });
+            renderizador.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderizador.domElement); // Añadimos el canvas al documento
+
+            // Generamos cubos al cargar la página
+            generarCubosAleatorios();
+        }
+
+        // Función para crear un cubo
+        function crearCubo() {
+            // Geometría del cubo redimensionado
+            const geometria = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+            // Material transparente
+            const material = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.2 });
+            const cubo = new THREE.Mesh(geometria, material);
+
+            // Añadimos los vértices y diagonales
+            agregarLineas(cubo);
+            return cubo; // Devolvemos el cubo creado
+        }
+
+        // Función para agregar líneas de los vértices y diagonales
+        function agregarLineas(cubo) {
+            const geometriaLineas = new THREE.EdgesGeometry(cubo.geometry); // Creamos geometría de las aristas
+            const materialLineas = new THREE.LineBasicMaterial({ color: 0x00ff00 }); // Material verde
+            const lineas = new THREE.LineSegments(geometriaLineas, materialLineas);
+            cubo.add(lineas); // Añadimos las líneas al cubo
+        }
+
+        // Función para generar cubos en una línea horizontal
+        function generarCubosAleatorios() {
+            // Limpiamos los cubos existentes
+            cubos.forEach(cubo => escena.remove(cubo));
+            cubos.length = 0; // Vaciar el array
+
+            // Generamos una cantidad aleatoria de cubos entre 1 y 5
+            const cantidadCubos = Math.floor(Math.random() * 5) + 1;
+
+            for (let i = 0; i < cantidadCubos; i++) {
+                const cubo = crearCubo();
+                // Posicionamos el cubo en una línea horizontal centrada
+                cubo.position.set(i * 1.5 - (cantidadCubos - 1) * 0.75, 0, 0); // X
+                escena.add(cubo); // Añadimos el cubo a la escena
+                cubos.push(cubo); // Añadimos el cubo al array
+            }
+        }
+
+        // Función para animar los cubos
+        function animar() {
+            requestAnimationFrame(animar); // Llamamos a la función de animación
+            cubos.forEach(cubo => {
+                cubo.rotation.x += 0.01; // Rotación en el eje X
+                cubo.rotation.y += 0.01; // Rotación en el eje Y
+                cubo.rotation.z += 0.01; // Rotación en el eje Z
+            });
+            renderizar(); // Renderizamos la escena
+        }
+
+        // Función para renderizar la escena
+        function renderizar() {
+            renderizador.render(escena, camara); // Renderizamos la escena desde la cámara
+        }
+
+        // Evento para ajustar el tamaño del canvas al redimensionar la ventana
+        window.addEventListener('resize', () => {
+            camara.aspect = window.innerWidth / window.innerHeight; // Ajustamos el aspecto
+            camara.updateProjectionMatrix(); // Actualizamos la proyección
+            renderizador.setSize(window.innerWidth, window.innerHeight); // Ajustamos el tamaño del renderizador
+        });
+
+        // Evento para generar cubos al presionar F5 (recarga de página)
+        window.addEventListener('beforeunload', generarCubosAleatorios);
+
+        // Inicializamos la escena y comenzamos la animación
+        inicializarEscena();
+        animar();
+    </script>
+</body>
+</html>
