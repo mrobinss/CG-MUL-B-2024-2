@@ -21,14 +21,19 @@
         function inicializarEscena() {
             // Creamos la escena
             escena = new THREE.Scene();
+
             // Configuramos la cámara
             camara = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camara.position.z = 5; // Posicionamos la cámara
+            camara.position.z = 5;
 
             // Creamos el renderizador
             renderizador = new THREE.WebGLRenderer({ antialias: true });
             renderizador.setSize(window.innerWidth, window.innerHeight);
-            document.body.appendChild(renderizador.domElement); // Añadimos el canvas al documento
+            document.body.appendChild(renderizador.domElement);
+
+            // Añadimos luz a la escena
+            const luzAmbiental = new THREE.AmbientLight(0x404040); // Luz ambiental suave
+            escena.add(luzAmbiental);
 
             // Generamos cubos al cargar la página
             generarCubosAleatorios();
@@ -36,68 +41,59 @@
 
         // Función para crear un cubo
         function crearCubo() {
-            // Geometría del cubo redimensionado
             const geometria = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-            // Material transparente
-            const material = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.2 });
+
+            // Material de malla solo con wireframe
+            const material = new THREE.MeshBasicMaterial({ 
+                color: 0xffffff, // Color blanco (puedes cambiarlo si lo deseas)
+                wireframe: true 
+            });
+
             const cubo = new THREE.Mesh(geometria, material);
-
-            // Añadimos los vértices y diagonales
-            agregarLineas(cubo);
-            return cubo; // Devolvemos el cubo creado
-        }
-
-        // Función para agregar líneas de los vértices y diagonales
-        function agregarLineas(cubo) {
-            const geometriaLineas = new THREE.EdgesGeometry(cubo.geometry); // Creamos geometría de las aristas
-            const materialLineas = new THREE.LineBasicMaterial({ color: 0x00ff00 }); // Material verde
-            const lineas = new THREE.LineSegments(geometriaLineas, materialLineas);
-            cubo.add(lineas); // Añadimos las líneas al cubo
+            return cubo;
         }
 
         // Función para generar cubos en una línea horizontal
         function generarCubosAleatorios() {
-            // Limpiamos los cubos existentes
             cubos.forEach(cubo => escena.remove(cubo));
-            cubos.length = 0; // Vaciar el array
+            cubos.length = 0;
 
-            // Generamos una cantidad aleatoria de cubos entre 1 y 5
             const cantidadCubos = Math.floor(Math.random() * 5) + 1;
 
             for (let i = 0; i < cantidadCubos; i++) {
                 const cubo = crearCubo();
-                // Posicionamos el cubo en una línea horizontal centrada
-                cubo.position.set(i * 1.5 - (cantidadCubos - 1) * 0.75, 0, 0); // X
-                escena.add(cubo); // Añadimos el cubo a la escena
-                cubos.push(cubo); // Añadimos el cubo al array
+                cubo.position.set(i * 1.5 - (cantidadCubos - 1) * 0.75, 0, 0);
+                escena.add(cubo);
+                cubos.push(cubo);
             }
+
+            // Ajustar la posición de la cámara en función del número de cubos
+            camara.position.x = 0;
+            camara.position.z = Math.max(5, cantidadCubos * 1.5);
         }
 
         // Función para animar los cubos
         function animar() {
-            requestAnimationFrame(animar); // Llamamos a la función de animación
+            requestAnimationFrame(animar);
             cubos.forEach(cubo => {
-                cubo.rotation.x += 0.01; // Rotación en el eje X
-                cubo.rotation.y += 0.01; // Rotación en el eje Y
-                cubo.rotation.z += 0.01; // Rotación en el eje Z
+                cubo.rotation.x += 0.01;
+                cubo.rotation.y += 0.01;
+                cubo.rotation.z += 0.01;
             });
-            renderizar(); // Renderizamos la escena
+            renderizar();
         }
 
         // Función para renderizar la escena
         function renderizar() {
-            renderizador.render(escena, camara); // Renderizamos la escena desde la cámara
+            renderizador.render(escena, camara);
         }
 
         // Evento para ajustar el tamaño del canvas al redimensionar la ventana
         window.addEventListener('resize', () => {
-            camara.aspect = window.innerWidth / window.innerHeight; // Ajustamos el aspecto
-            camara.updateProjectionMatrix(); // Actualizamos la proyección
-            renderizador.setSize(window.innerWidth, window.innerHeight); // Ajustamos el tamaño del renderizador
+            camara.aspect = window.innerWidth / window.innerHeight;
+            camara.updateProjectionMatrix();
+            renderizador.setSize(window.innerWidth, window.innerHeight);
         });
-
-        // Evento para generar cubos al presionar F5 (recarga de página)
-        window.addEventListener('beforeunload', generarCubosAleatorios);
 
         // Inicializamos la escena y comenzamos la animación
         inicializarEscena();
